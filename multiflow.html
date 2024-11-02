@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer</title>
+    <link rel="stylesheet" href="customer.css">
+</head>
+<body>
+    <!-- Step 1: Account Type Selection -->
+    <div class="account-selector" id="step1">
+        <h1>Choose Account</h1>
+        <div class="account-type-selection">
+            <div class="account-type-card" data-type="individual">
+                <h2>Individual</h2>
+                <p>Personal account for individual use</p>
+            </div>
+            
+            <div class="account-type-card" data-type="business">
+                <h2>Business</h2>
+                <p>Business account with premium services</p>
+            </div>
+        </div>
+        <div class="button-group">
+            <button id="nextButton" class="btn-next">Continue</button>
+        </div>
+    </div>
+
+    <!-- Step 2: Phone Verification -->
+    <div class="phone-verification" id="step2" style="display: none;">
+        <!-- Loading Overlay -->
+        <div class="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+    
+        <!-- Phone Input Section -->
+        <div id="phoneInputStep" class="phone-input-section">
+            <h1>Verify Your Phone</h1>
+            <p class="subtitle">Enter your phone number to receive a verification code</p>
+            
+            <div class="phone-input-group">
+                <div class="country-select">
+                    <label for="countryCode">Country Code</label>
+                    <select id="countryCode" required>
+                        <option value="+1">US (+1)</option>
+                        <option value="+44">UK (+44)</option>
+                        <option value="+91">IN (+91)</option>
+                        <option value="+876">JAM (+876)</option>
+                    </select>
+                </div>
+    
+                <div class="phone-field">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="tel" id="phoneNumber" placeholder="Enter your phone number" required>
+                    <div class="error-message" id="phoneError"></div>
+                </div>
+            </div>
+    
+            <div class="button-group">
+                <button type="button" class="btn-back" id="backToAccount">Back</button>
+                <button type="button" class="btn-next" id="sendCodeBtn" disabled>Send Code</button>
+            </div>
+        </div>
+    
+        <!-- Verification Code Section -->
+        <div id="codeVerificationStep" class="code-verification-section" style="display: none;">
+            <h1>Enter Verification Code</h1>
+            <p>Enter the 6-digit code sent to <span id="displayPhone"></span></p>
+    
+            <div class="code-input-group">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric">
+            </div>
+    
+            <div class="verification-timer">
+                Code expires in: <span id="countdown">02:00</span>
+            </div>
+    
+            <div id="verificationStatus" class="verification-status"></div>
+    
+            <div class="button-group">
+                <button type="button" class="btn-text" id="editPhone">Change Number</button>
+                <button type="button" class="btn-text" id="resendCode" disabled>
+                    Resend Code (<span id="resendTimer">60</span>s)
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="step3" class="personal-info" style="display: none;">
+        <h1>Personal Information</h1>
+        <p class="subtitle">Please enter your details to continue</p>
+    
+        <form id="personalInfoForm">
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input 
+                    type="text" 
+                    id="firstName" 
+                    name="firstName" 
+                    placeholder="Enter your first name"
+                    required
+                >
+                <div class="error-message" id="firstNameError"></div>
+            </div>
+    
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input 
+                    type="text" 
+                    id="lastName" 
+                    name="lastName" 
+                    placeholder="Enter your last name"
+                    required
+                >
+                <div class="error-message" id="lastNameError"></div>
+            </div>
+    
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="Enter your email address"
+                    required
+                >
+                <div class="error-message" id="emailError"></div>
+            </div>
+    
+            <div class="button-group">
+                <button type="button" class="btn-back" id="backToPhone">Back</button>
+                <button type="submit" class="btn-next" id="submitPersonalInfo" disabled>Continue</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <script src="customer.js"></script>
+</body>
+</html>
