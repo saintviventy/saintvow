@@ -599,6 +599,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.goBack();
             });
         }
+
+        checkFormValidity() {
+            const firstName = this.elements.firstName.value.trim();
+            const lastName = this.elements.lastName.value.trim();
+            const email = this.elements.email.value.trim();
+        
+            // Check if all fields have values and email is valid
+            const isValid = firstName !== '' && 
+                           lastName !== '' && 
+                           email !== '' && 
+                           this.validateEmail(email);
+        
+            // Update button state
+            if (isValid) {
+                this.elements.submitButton.classList.add('active');
+                this.elements.submitButton.disabled = false;
+            } else {
+                this.elements.submitButton.classList.remove('active');
+                this.elements.submitButton.disabled = true;
+            }
+        }
     
         validateField(fieldName) {
             const value = this.elements[fieldName].value.trim();
@@ -656,7 +677,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     
         updateSubmitButton() {
-            this.elements.submitButton.disabled = !this.validateForm();
+            const isValid = this.validateForm();
+            this.elements.submitButton.disabled = !isValid;
+            
+            // Add or remove active class based on validation
+            if (isValid) {
+                this.elements.submitButton.classList.add('active');
+            } else {
+                this.elements.submitButton.classList.remove('active');
+            }
         }
     
         handleSubmit() {
