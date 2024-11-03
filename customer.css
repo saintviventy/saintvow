@@ -18,7 +18,7 @@
 }
 
 body {
-    font-family: 'roboto', BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-family: 'roboto', BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -390,4 +390,58 @@ label {
     font-size: 14px;
     margin-top: 5px;
     display: none;
+}
+
+/* Business Information Styles */
+.business-info {
+    background: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 500px;
+}
+
+.business-info h1 {
+    margin-bottom: 8px;
+    color: var(--color-text);
+    font-size: 24px;
+}
+
+.business-info .subtitle {
+    color: var(--color-text-secondary);
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+/* Required field indicator */
+.required {
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+/* Select input styles */
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    background-color: white;
+    cursor: pointer;
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+/* Date input styles */
+input[type="date"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    font-size: 16px;
 }

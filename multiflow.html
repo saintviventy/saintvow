@@ -137,6 +137,67 @@
             </div>
         </form>
     </div>
+
+    <!-- Add this new section after the existing personal-info section -->
+<div id="businessStep" class="business-info" style="display: none;">
+    <h1>Business Information</h1>
+    <p class="subtitle">Please enter your business details</p>
+
+    <form id="businessInfoForm">
+        <div class="form-group">
+            <label for="businessName">Business Name<span class="required">*</span></label>
+            <input 
+                type="text" 
+                id="businessName" 
+                name="businessName" 
+                placeholder="Enter your business name"
+                required
+                maxlength="255"
+            >
+            <div class="error-message" id="businessNameError"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="taxNumber">Tax Registration Number<span class="required">*</span></label>
+            <input 
+                type="text" 
+                id="taxNumber" 
+                name="taxNumber" 
+                placeholder="Enter tax registration number"
+                required
+                maxlength="50"
+            >
+            <div class="error-message" id="taxNumberError"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="businessSize">Business Size<span class="required">*</span></label>
+            <select id="businessSize" name="businessSize" required>
+                <option value="">Select business size</option>
+                <option value="Small">Small</option>
+                <option value="Medium">Medium</option>
+                <option value="Large">Large</option>
+            </select>
+            <div class="error-message" id="businessSizeError"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="registrationDate">Registration Date</label>
+            <input 
+                type="date" 
+                id="registrationDate" 
+                name="registrationDate"
+                max="2024-12-31"
+            >
+            <div class="error-message" id="registrationDateError"></div>
+        </div>
+
+        <div class="button-group">
+            <button type="button" class="btn-back" id="backToBusiness">Back</button>
+            <button type="submit" class="btn-next" id="submitBusinessInfo" disabled>Continue</button>
+        </div>
+    </form>
+</div>
 </div>
 
     <script src="customer.js"></script>

@@ -5,13 +5,18 @@ document.addEventListener('DOMContentLoaded', () => {
         VERIFICATION: {
             CODE_LENGTH: 6,
             MAX_ATTEMPTS: 3,
-            CODE_EXPIRY: 120, // seconds
-            RESEND_COOLDOWN: 60, // seconds
-            LOCK_DURATION: 15 * 60 * 1000 // 15 minutes
+            CODE_EXPIRY: 120,
+            RESEND_COOLDOWN: 60,
+            LOCK_DURATION: 15 * 60 * 1000
         },
         VALIDATION: {
             PHONE_REGEX: /^\d{10}$/,
-            EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            BUSINESS: {  // Add this nested object
+                NAME_MIN_LENGTH: 2,
+                NAME_MAX_LENGTH: 255,
+                TAX_NUMBER_PATTERN: /^[A-Z0-9]{5,50}$/i
+            }
         },
         ENDPOINTS: {
             SEND_CODE: '/api/verify/send-code',
@@ -83,6 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 firstName: null,
                 lastName: null,
                 email: null
+            }, 
+            businessInfo: {
+                businessName: null,
+                taxNumber: null,
+                businessSize: null,
+                registrationDate: null
             }
             };
             this.listeners = {};
@@ -707,51 +718,236 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Initialize Application
-    class RegistrationApp {
-        constructor() {
-            this.formState = new FormState();
-            this.steps = {
-                accountType: new AccountTypeSelector(this.formState),
-                phoneVerification: new PhoneVerification(this.formState),
-                personalInfo: new PersonalInfoStep(this.formState)  // Add this line
-            };
-            
-            this.bindStateListeners();
-        }
-    
-        bindStateListeners() {
-            this.formState.subscribe('step', (data) => {
-                this.handleStepChange(data.currentStep);
-            });
-    
-            this.formState.subscribe('phone', (data) => {
-                if (data.phone.isVerified) {
-                    // When phone is verified, move to personal info
-                    this.formState.setStep(3);
-                }
-            });
-        }
-    
-        handleStepChange(step) {
-            // Hide all steps
-            document.querySelectorAll('.form-step, .phone-verification, .personal-info')
-                .forEach(s => s.style.display = 'none');
-    
-            // Show current step
-            switch(step) {
-                case 1:
-                    document.getElementById('step1').style.display = 'block';
-                    break;
-                case 2:
-                    document.getElementById('step2').style.display = 'block';
-                    break;
-                case 3:
-                    document.getElementById('step3').style.display = 'block';
-                    break;
+    // Add this new class
+class BusinessInfoStep {
+    constructor(formState) {
+        this.formState = formState;
+        this.container = document.getElementById('businessStep');
+        this.initializeElements();
+        this.bindEvents();
+    }
+
+    initializeElements() {
+        this.elements = {
+            form: this.container.querySelector('#businessInfoForm'),
+            businessName: this.container.querySelector('#businessName'),
+            taxNumber: this.container.querySelector('#taxNumber'),
+            businessSize: this.container.querySelector('#businessSize'),
+            registrationDate: this.container.querySelector('#registrationDate'),
+            backButton: this.container.querySelector('#backToBusiness'),
+            submitButton: this.container.querySelector('#submitBusinessInfo'),
+            errors: {
+                businessName: this.container.querySelector('#businessNameError'),
+                taxNumber: this.container.querySelector('#taxNumberError'),
+                businessSize: this.container.querySelector('#businessSizeError'),
+                registrationDate: this.container.querySelector('#registrationDateError')
             }
+        };
+
+        // Set max date for registration date
+        const today = new Date().toISOString().split('T')[0];
+        this.elements.registrationDate.max = today;
+    }
+
+    bindEvents() {
+        // Required field validation
+        ['businessName', 'taxNumber', 'businessSize'].forEach(field => {
+            this.elements[field].addEventListener('input', () => {
+                this.validateField(field);
+                this.updateSubmitButton();
+            });
+
+            this.elements[field].addEventListener('blur', () => {
+                this.validateField(field);
+            });
+        });
+
+        // Optional field validation
+        this.elements.registrationDate.addEventListener('change', () => {
+            this.validateField('registrationDate');
+        });
+
+        // Form submission
+        this.elements.form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (this.validateForm()) {
+                this.handleSubmit();
+            }
+        });
+
+        // Back button
+        this.elements.backButton.addEventListener('click', () => {
+            this.goBack();
+        });
+    }
+
+    validateField(fieldName) {
+        const value = this.elements[fieldName].value.trim();
+        let isValid = true;
+        let errorMessage = '';
+
+        switch(fieldName) {
+            case 'businessName':
+                if (!value) {
+                    isValid = false;
+                    errorMessage = 'Business name is required';
+                } else if (value.length < CONFIG.VALIDATION.BUSINESS.NAME_MIN_LENGTH) {
+                    isValid = false;
+                    errorMessage = 'Business name must be at least 2 characters';
+                }
+                break;
+
+            case 'taxNumber':
+                if (!value) {
+                    isValid = false;
+                    errorMessage = 'Tax registration number is required';
+                } else if (!CONFIG.VALIDATION.BUSINESS.TAX_NUMBER_PATTERN.test(value)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid tax registration number';
+                }
+                break;
+
+            case 'businessSize':
+                if (!value) {
+                    isValid = false;
+                    errorMessage = 'Please select business size';
+                }
+                break;
+
+            case 'registrationDate':
+                if (value) {
+                    const date = new Date(value);
+                    const today = new Date();
+                    if (date > today) {
+                        isValid = false;
+                        errorMessage = 'Registration date cannot be in the future';
+                    }
+                }
+                break;
+        }
+
+        this.showFieldError(fieldName, !isValid, errorMessage);
+        return isValid;
+    }
+
+    showFieldError(fieldName, hasError, message = '') {
+        const field = this.elements[fieldName];
+        const errorElement = this.elements.errors[fieldName];
+
+        if (hasError) {
+            field.classList.add('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        } else {
+            field.classList.remove('error');
+            errorElement.style.display = 'none';
         }
     }
-    // Start the application
-    window.app = new RegistrationApp();
+
+    validateForm() {
+        return ['businessName', 'taxNumber', 'businessSize'].every(field => 
+            this.validateField(field)) && this.validateField('registrationDate');
+    }
+
+    updateSubmitButton() {
+        const isValid = this.validateForm();
+        this.elements.submitButton.disabled = !isValid;
+        
+        if (isValid) {
+            this.elements.submitButton.classList.add('active');
+        } else {
+            this.elements.submitButton.classList.remove('active');
+        }
+    }
+
+    handleSubmit() {
+        const formData = {
+            businessName: this.elements.businessName.value.trim(),
+            taxNumber: this.elements.taxNumber.value.trim(),
+            businessSize: this.elements.businessSize.value,
+            registrationDate: this.elements.registrationDate.value || null
+        };
+
+        this.formState.setBusinessInfo(formData);
+        this.formState.setStep(4);
+    }
+
+    goBack() {
+        this.container.style.display = 'none';
+        this.formState.setStep(2);
+        document.getElementById('step2').style.display = 'block';
+    }
+}
+
+class SaintvowApp {
+    constructor() {
+        this.formState = new FormState();
+        this.steps = {
+            accountType: new AccountTypeSelector(this.formState),
+            phoneVerification: new PhoneVerification(this.formState),
+            personalInfo: new PersonalInfoStep(this.formState),
+            businessInfo: new BusinessInfoStep(this.formState)
+        };
+        
+        this.bindStateListeners();
+    }
+
+    bindStateListeners() {
+        this.formState.subscribe('step', (data) => {
+            this.handleStepChange(data.currentStep);
+        });
+
+        this.formState.subscribe('phone', (data) => {
+            if (data.phone.isVerified) {
+                // When phone is verified, move to step 3
+                this.formState.setStep(3);
+            }
+        });
+
+        // Listen for account type changes
+        this.formState.subscribe('accountType', (data) => {
+            console.log('Account type selected:', data.accountType);
+        });
+
+        // Listen for personal info completion
+        this.formState.subscribe('personalInfo', (data) => {
+            console.log('Personal info updated:', data.personalInfo);
+        });
+
+        // Listen for business info completion
+        this.formState.subscribe('businessInfo', (data) => {
+            console.log('Business info updated:', data.businessInfo);
+        });
+    }
+
+    handleStepChange(step) {
+        // Hide all steps
+        document.querySelectorAll('.form-step, .phone-verification, .personal-info, .business-info')
+            .forEach(s => s.style.display = 'none');
+
+        // Show current step
+        switch(step) {
+            case 1:
+                document.getElementById('step1').style.display = 'block';
+                break;
+            case 2:
+                document.getElementById('step2').style.display = 'block';
+                break;
+            case 3:
+                // Show appropriate form based on account type
+                if (this.formState.data.accountType === 'individual') {
+                    document.getElementById('step3').style.display = 'block';
+                } else {
+                    document.getElementById('businessStep').style.display = 'block';
+                }
+                break;
+            case 4:
+                // Handle next step (email verification or success)
+                console.log('Moving to step 4');
+                break;
+        }
+    }
+}
+// Initialize the application
+    window.app = new SaintvowApp();
 });
